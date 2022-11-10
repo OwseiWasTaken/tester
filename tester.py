@@ -1,31 +1,31 @@
 #! /usr/local/bin/python3.11
 #imports
 from util import *
+#import lib.keys
+from lib.keys import GetKey as gtk
 
-@dataclass
-class Rule:
-	def __init__(this, name, input=[], output=[], ExitCode=0, UseArgsNotInput=False):
-		this.name=name
-		this.input='\n'.join(input)
-		this.output='\n'.join(output)
-		this.UseArgsNotInput=UseArgsNotInput
-		this.ExitCode=ExitCode
+# sets
 
 red = RGB(255,0,0)
 green = RGB(0,255,0)
 cyan = RGB(0,255,255)
 nc = RGB(255,255,255)
 
+
 def _scheck(c, e):
+	# make files to diff
 	with open("tmp1", 'w') as f:
 		f.write(c)
 	with open("tmp2", 'w') as f:
 		f.write(e)
+	# get diff output (and remove last \n)
 	sbp = ''.join(list(map(chr, subprocess.run(("diff", "tmp1", "tmp2"), capture_output=True).stdout)))[:-1]
 	ss("rm tmp1")
 	ss("rm tmp2")
 	if sbp:
-		return sbp
+		return (
+			cyan+'{\n'+nc+sbp+cyan+'\n}'+nc
+		)
 	return (
 		f"{green}"
 		f"got correct output"
@@ -44,6 +44,15 @@ def _rcheck(c, e):
 		f"expected {e}, got {c}"
 		f"{nc}"
 	)
+
+@dataclass
+class Rule:
+	def __init__(this, name, input=[], output=[], ExitCode=0, UseArgsNotInput=False):
+		this.name=name
+		this.input='\n'.join(input)
+		this.output='\n'.join(output)
+		this.UseArgsNotInput=UseArgsNotInput
+		this.ExitCode=ExitCode
 
 class Tester:
 	def __init__(this, program:str, *rules:Iterable[Rule]):
@@ -68,23 +77,54 @@ class Tester:
 			checks.append(
 				f"Rule \"{rule.name}\" {i+1}:\n"
 				f"return: {rcheck}\n"
-				f"stdout: {cyan}"'{'f" {nc}{scheck}\n"
-				f"{cyan}"'}'f"{nc}\n"
+				f"stdout: {scheck}\n"
 			)
 		return checks
 
-#main
-def Main() -> int:
-	r1 = Rule("exitcode", ["nothing"], [""], 1)
-	r2 = Rule("don't", ["don't"], ["don't\n"])
-	t = Tester("./test.py", r1, r2)
-	for t in t.run():
-		print(t)
+def GetLine(y) -> str:
+	line = ""
+	x = 0
+	stdout.write(f"\x1B[{y+1};1H>")
+	while True:
+		stdout.flush()
+		k = gtk()
+		if len(k) == 1:
+			line+=k
+			x+=1
+		else:
+			match (k):
+				case ("space"):
+					line+=" "
+					x+=1
+				case ("backspace"):
+					if line and x:
+						line = line[:x-1] + line[x:]
+						x-=1
+					ClearLine(y)
+				case ("enter"):
+					break
+		stdout.write(f"\x1B[{y+1};1H>")
+		stdout.write(line)
+		stdout.write(f"\x1B[{y+1};{2+x}H")
+	return line.split()
 
+def  Interactive() -> int:
 	return 0
 
+#main
+def Main() -> int:
+	ss("clear")
+	x = GetLine(0)
+	x2 = GetLine(1)
+	print()
+	print(x, x2)
+	#r1 = Rule("exitcode", ["nothing"], [""], 1)
+	#r2 = Rule("don't", ["don't"], ["don't\n"])
+	#t = Tester("./test.py", r1, r2)
+	#for t in t.run():
+	#	print(t)
 
-
+	return 0
 
 
 #start
