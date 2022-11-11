@@ -6,6 +6,33 @@ from lib.commands import CheckLine
 
 # sets
 
+class Tester:
+	def __init__(this, name:str, program:str, *rules:Iterable[Rule]):
+		this.name = name
+		this.program = program
+		this.rules = list(rules)
+
+	def AddRule(this, rule):
+		this.rules.append(rule)
+
+	def run(this):
+		checks = []
+		outs = []
+		print("running programs")
+		for rule in this.rules:
+			outs.append(cmd(this.program, text = True, input = rule.input, capture_output=True))
+		print(f"\nrunning test schedule {lgreen}'{this.name}'{nc}")
+		for i in r(this.rules):
+			rule = this.rules[i]
+			c = outs[i]
+			scheck = _scheck(c.stdout, rule.output)
+			rcheck = _rcheck(c.returncode, rule.ExitCode)
+			checks.append(
+				f"Rule \"{rule.name}\" {i+1}:\n"
+				f"return: {rcheck}\n"
+				f"stdout: {scheck}\n"
+			)
+		return checks
 
 def _scheck(c, e):
 	# make files to diff
@@ -40,47 +67,11 @@ def _rcheck(c, e):
 		f"{nc}"
 	)
 
-@dataclass
-class Rule:
-	def __init__(this, name, input=[], output=[], ExitCode=0, UseArgsNotInput=False):
-		this.name=name
-		this.input='\n'.join(input)
-		this.output='\n'.join(output)
-		this.UseArgsNotInput=UseArgsNotInput
-		this.ExitCode=ExitCode
-
-class Tester:
-	def __init__(this, name:str, program:str, *rules:Iterable[Rule]):
-		this.name = name
-		this.program = program
-		this.rules = list(rules)
-
-	def AddRule(this, rule):
-		this.rules.append(rule)
-
-	def run(this):
-		checks = []
-		outs = []
-		print("running programs")
-		for rule in this.rules:
-			outs.append(cmd(this.program, text = True, input = rule.input, capture_output=True))
-		print(f"\nrunning test schedule {this.name}")
-		for i in r(this.rules):
-			rule = this.rules[i]
-			c = outs[i]
-			scheck = _scheck(c.stdout, rule.output)
-			rcheck = _rcheck(c.returncode, rule.ExitCode)
-			checks.append(
-				f"Rule \"{rule.name}\" {i+1}:\n"
-				f"return: {rcheck}\n"
-				f"stdout: {scheck}\n"
-			)
-		return checks
-
-def GetLine(y) -> str:
+def GetLine(prompt:str, y:int) -> str:
 	line = ""
+	pl = len(prompt)
 	x = 0
-	stdout.write(f"\x1B[{y+1};1H>")
+	stdout.write(f"\x1B[{y+1};1H{prompt}")
 	while True:
 		stdout.flush()
 		k = gtk()
@@ -105,9 +96,9 @@ def GetLine(y) -> str:
 						x+=1
 				case ("enter"):
 					break
-		stdout.write(f"\x1B[{y+1};1H>")
+		stdout.write(f"\x1B[{y+1};1H{prompt}")
 		stdout.write(line)
-		stdout.write(f"\x1B[{y+1};{2+x}H")
+		stdout.write(f"\x1B[{y+1};{1+pl+x}H")
 	return line
 
 def  Interactive() -> int:
@@ -116,22 +107,21 @@ def  Interactive() -> int:
 #main
 def Main() -> int:
 	ss("clear")
-	print(CheckLine("run 3"     , 1))
-	print(CheckLine("run all"   , 1))
-	print(CheckLine("help run"  , 1))
-	print(CheckLine("make test" , 1))
-	print(CheckLine("make test" , 1))
+	#y = 0
+	#while True:
+	#	print(pos(my-2)+CheckLine(GetLine('$', y), 1))
+	#	y+=1
 
 	#x = GetLine(0)
 	#x2 = GetLine(1)
 	#print()
 	#print(x, x2)
 
-	#r1 = Rule("exitcode", ["nothing"], [""], 1)
-	#r2 = Rule("don't", ["don't"], ["don't\n"])
-	#t = Tester("main", "./test.py", r1, r2)
-	#for t in t.run():
-	#	print(t)
+	r1 = Rule("exitcode", ["nothing"], [""], 1)
+	r2 = Rule("don't", ["don't"], ["don't\n"])
+	t = Tester("main", "./tests/test.py", r1, r2)
+	for t in t.run():
+		print(t)
 
 	return 0
 
