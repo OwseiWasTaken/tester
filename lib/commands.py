@@ -1,5 +1,15 @@
 from lib.basics import *
 
+
+# special chars for command arg desc
+# ? = optional
+# % = category
+#  %s = string
+#  %c = command
+#  %d = digit
+#  %b = bool
+# A|B = A or B
+
 commands:dict[str, list[str]] = {
 	"help": ["?%c",],
 	"make": ["rule|test","?%s", "%s", "%b"],
@@ -47,7 +57,8 @@ def CheckCommandVal(cmd:list[str]) -> bool:
 					rt.append(cmmd)
 					continue
 				if p == '%b':
-					rt+=['1', '0', 'true', 'false', 'True', 'False']
+					cmmd = cmmd.lower()
+					rt+=['1', '0', 'true', 'false', 'yes', 'no']
 				if p == '%d':
 					if ',' in cmmd:
 						print(all(map(lambda x: x.isdigit(), cmmd.split(','))))
