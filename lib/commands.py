@@ -24,6 +24,7 @@ def CheckCommandVal(cmd:list[str]) -> bool:
 	if not len(cmd):return False
 	cm = commands.get(cmd.pop(0), "")
 	if type(cm) != list: return False
+	i = 0
 	for i in r(cmd):
 		c = cm[i]
 		cmmd = cmd[i]
@@ -48,14 +49,16 @@ def CheckCommandVal(cmd:list[str]) -> bool:
 				if p == '%b':
 					rt+=['1', '0', 'true', 'false', 'True', 'False']
 				if p == '%d':
+					if ',' in cmmd:
+						print(all(map(lambda x: x.isdigit(), cmmd.split(','))))
 					if cmmd.isdigit():
 						rt.append(cmmd)
 						continue
 
 		if not cmmd in rt:return False
 	# check if more options needed option
-	if i < len(cm)-1:
-		if cm[i+1][0] != '?':
+	if len(cmd) < len(cm):
+		if cm[i][0] != '?':
 			return False
 
 	return True
