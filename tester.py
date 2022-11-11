@@ -1,8 +1,8 @@
 #! /usr/local/bin/python3.11
 #imports
 from util import *
-#import lib.keys
 from lib.keys import GetKey as gtk
+from lib.commands import Commands
 
 # sets
 
@@ -89,18 +89,24 @@ def GetLine(y) -> str:
 		stdout.flush()
 		k = gtk()
 		if len(k) == 1:
-			line+=k
+			line = line[:x] + k + line[x:]
 			x+=1
 		else:
 			match (k):
 				case ("space"):
-					line+=" "
+					line = line[:x] + ' ' + line[x:]
 					x+=1
 				case ("backspace"):
 					if line and x:
 						line = line[:x-1] + line[x:]
 						x-=1
 					ClearLine(y)
+				case ("left"):
+					if x:
+						x-=1
+				case ("right"):
+					if x < len(line):
+						x+=1
 				case ("enter"):
 					break
 		stdout.write(f"\x1B[{y+1};1H>")
