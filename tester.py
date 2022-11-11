@@ -1,15 +1,10 @@
 #! /usr/local/bin/python3.11
 #imports
-from util import *
+from lib.basics import *
 from lib.keys import GetKey as gtk
-from lib.commands import Commands
+from lib.commands import CheckLine
 
 # sets
-
-red = RGB(255,0,0)
-green = RGB(0,255,0)
-cyan = RGB(0,255,255)
-nc = RGB(255,255,255)
 
 
 def _scheck(c, e):
@@ -55,7 +50,8 @@ class Rule:
 		this.ExitCode=ExitCode
 
 class Tester:
-	def __init__(this, program:str, *rules:Iterable[Rule]):
+	def __init__(this, name:str, program:str, *rules:Iterable[Rule]):
+		this.name = name
 		this.program = program
 		this.rules = list(rules)
 
@@ -68,7 +64,7 @@ class Tester:
 		print("running programs")
 		for rule in this.rules:
 			outs.append(cmd(this.program, text = True, input = rule.input, capture_output=True))
-		print("\nrunning tests")
+		print(f"\nrunning test schedule {this.name}")
 		for i in r(this.rules):
 			rule = this.rules[i]
 			c = outs[i]
@@ -112,7 +108,7 @@ def GetLine(y) -> str:
 		stdout.write(f"\x1B[{y+1};1H>")
 		stdout.write(line)
 		stdout.write(f"\x1B[{y+1};{2+x}H")
-	return line.split()
+	return line
 
 def  Interactive() -> int:
 	return 0
@@ -120,13 +116,20 @@ def  Interactive() -> int:
 #main
 def Main() -> int:
 	ss("clear")
-	x = GetLine(0)
-	x2 = GetLine(1)
-	print()
-	print(x, x2)
+	print(CheckLine("run 3"     , 1))
+	print(CheckLine("run all"   , 1))
+	print(CheckLine("help run"  , 1))
+	print(CheckLine("make test" , 1))
+	print(CheckLine("make test" , 1))
+
+	#x = GetLine(0)
+	#x2 = GetLine(1)
+	#print()
+	#print(x, x2)
+
 	#r1 = Rule("exitcode", ["nothing"], [""], 1)
 	#r2 = Rule("don't", ["don't"], ["don't\n"])
-	#t = Tester("./test.py", r1, r2)
+	#t = Tester("main", "./test.py", r1, r2)
 	#for t in t.run():
 	#	print(t)
 

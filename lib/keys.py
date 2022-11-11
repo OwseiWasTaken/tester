@@ -1,4 +1,4 @@
-from util import *
+from lib.basics import *
 
 KeyDict:dict[str,str] = {}
 
